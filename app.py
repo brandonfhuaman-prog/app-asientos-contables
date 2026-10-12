@@ -17,14 +17,21 @@ if archivo and gemini_key:
     if st.button("Procesar Documento"):
         with st.spinner("Analizando comprobante con IA de Google..."):
             try:
-                # Configurar clave API de Gemini
-                genai.configure(api_key=gemini_key.strip())
+                # Configurar clave API limpiando espacios vacíos
+                api_key_clean = gemini_key.strip()
+                genai.configure(api_key=api_key_clean)
                 
-                # Intentar usar gemini-1.5-flash directamente
-                try:
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                except Exception:
-                    model = genai.GenerativeModel('gemini-1.5-pro')
+                # Búsqueda automática del modelo con soporte para visión
+                model_name = "models/gemini-1.5-flash"
+                available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                
+                # Seleccionar el primer modelo 'flash' disponible o usar fallback
+                for m in available_models:
+                    if "flash" in m:
+                        model_name = m
+                        break
+
+                model = genai.GenerativeModel(model_name)
 
                 # Cargar imagen con PIL
                 image = Image.open(archivo)
