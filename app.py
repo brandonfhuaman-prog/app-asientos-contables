@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import json
-import io
 from PIL import Image
 import google.generativeai as genai
 
@@ -19,12 +18,15 @@ if archivo and gemini_key:
         with st.spinner("Analizando comprobante con IA de Google..."):
             try:
                 # Configurar clave API de Gemini
-                genai.configure(api_key=gemini_key)
+                genai.configure(api_key=gemini_key.strip())
                 
-                # Modelo con la nomenclatura exacta soportada
-                model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                # Intentar usar gemini-1.5-flash directamente
+                try:
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                except Exception:
+                    model = genai.GenerativeModel('gemini-1.5-pro')
 
-                # Cargar imagen directamente con PIL
+                # Cargar imagen con PIL
                 image = Image.open(archivo)
 
                 prompt = """Analiza este comprobante de pago peruano (Factura, Boleta o Recibo por Honorarios). 
