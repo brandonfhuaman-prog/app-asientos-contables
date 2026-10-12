@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import json
+import io
 from PIL import Image
 import google.generativeai as genai
 
@@ -8,7 +9,7 @@ st.set_page_config(page_title="Lector Contable Gratuito", layout="wide")
 st.title("📄 Generador de Asientos Contables Gratis")
 
 # Clave gratuita de Google Gemini AI
-gemini_key = st.text_input("Ingresa tu API Key GRATUITA de Google Gemini", type="password")
+gemini_key = st.text_input("Ingresa tu API Key GRATUITA de Google Gemini (AIzaSy...)", type="password")
 st.caption("Consigue tu clave 100% gratis en: https://aistudio.google.com/app/apikey")
 
 archivo = st.file_uploader("Sube una foto o imagen de tu Factura, Boleta o RH", type=["png", "jpg", "jpeg"])
@@ -19,10 +20,12 @@ if archivo and gemini_key:
             try:
                 # Configurar clave API de Gemini
                 genai.configure(api_key=gemini_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                # Modelo con la nomenclatura exacta soportada
+                model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
                 # Cargar imagen directamente con PIL
-               model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                image = Image.open(archivo)
 
                 prompt = """Analiza este comprobante de pago peruano (Factura, Boleta o Recibo por Honorarios). 
                 Extrae los datos y responde ÚNICAMENTE en formato JSON válido sin texto adicional ni bloques de código markdown:
@@ -79,6 +82,15 @@ if archivo and gemini_key:
                 with col2:
                     st.subheader("Asiento Contable Generado")
                     st.dataframe(df_asiento, hide_index=True)
+
+                    # Exportar a CSV / Excel rápido
+                    csv = df_asiento.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label="📥 Descargar Asiento (CSV/Excel)",
+                        data=csv,
+                        file_name=f"asiento_{datos.get('serie_numero', 'comprobante')}.csv",
+                        mime="text/csv"
+                    )
 
             except Exception as e:
                 st.error(f"Error al procesar el documento: {e}")
