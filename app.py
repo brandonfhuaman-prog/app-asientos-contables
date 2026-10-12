@@ -22,7 +22,7 @@ if archivo and gemini_key:
                 model = genai.GenerativeModel('gemini-1.5-flash')
 
                 # Cargar imagen directamente con PIL
-                image = Image.open(archivo)
+               model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
                 prompt = """Analiza este comprobante de pago peruano (Factura, Boleta o Recibo por Honorarios). 
                 Extrae los datos y responde ÚNICAMENTE en formato JSON válido sin texto adicional ni bloques de código markdown:
